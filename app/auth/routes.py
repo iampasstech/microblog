@@ -8,6 +8,8 @@ from app.auth.forms import LoginForm, RegistrationForm, \
     ResetPasswordRequestForm, ResetPasswordForm
 from app.models import User
 from app.auth.email import send_password_reset_email
+from app.active_connect.active_connect_utils import get_management_api
+from Activeconnect.management_api import ManagementAPIResult
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -41,14 +43,39 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash(_('Congratulations, you are now a registered user!'))
-        return redirect(url_for('auth.login'))
+
+        # Register the user with Activeconnect.
+        manager = get_management_api()
+        add_user_result = manager.add_user(user.active_connect_id)
+
+        if add_user_result == ManagementAPIResult.success:
+            db.session.add(user)
+            db.session.commit()
+            flash(_('Congratulations, you are now a registered user!'))
+            return redirect(url_for('auth.register_device', user_id=user.id))
+        else:
+            # We failed to register the user so just show the page again.
+            if add_user_result == ManagementAPIResult.user_exists:
+                # User already exists
+                flash('User already exists')
+            else:
+                # User failed
+                flash('Failed to add user')
+            return redirect(url_for('auth.register'))
+
     return render_template('auth/register.html', title=_('Register'),
                            form=form)
 
+@bp.route('/register_device/<user_id>', methods=['GET'])
+def register_device(user_id):
+    user = User.query.filter(User.id == user_id).first_or_404()
+
+    # Create the activeconnect manager object.
+    manager = get_management_api()
+
+    # Get a registration link for the user
+    registration_link = manager.get_registration_link(user_id = user.active_connect_id, display_name=user.username)
+    return render_template('auth/register_device.html', reg_link = registration_link)
 
 @bp.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_password_request():
