@@ -10,6 +10,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import redis
 import rq
+import random
+import string
 from app import db, login
 from app.search import add_to_index, remove_from_index, query_index
 
@@ -92,12 +94,16 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
-    password_hash = db.Column(db.String(128))
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     about_me = db.Column(db.String(140))
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
+
+    # This is a random string used to identify this user to active_connect.
+    active_connect_id = db.Column(db.String(32), index=True, unique=True)
+
+
     followed = db.relationship(
         'User', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),
@@ -113,6 +119,11 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     notifications = db.relationship('Notification', backref='user',
                                     lazy='dynamic')
     tasks = db.relationship('Task', backref='user', lazy='dynamic')
+
+    def __init__(self, username, email):
+        self.username = username
+        self.email = email
+        self.active_connect_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
