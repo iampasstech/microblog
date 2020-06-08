@@ -104,7 +104,6 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     # This is a random string used to identify this user to active_connect.
     active_connect_id = db.Column(db.String(32), index=True, unique=True)
 
-
     followed = db.relationship(
         'User', secondary=followers,
         primaryjoin=(followers.c.follower_id == id),

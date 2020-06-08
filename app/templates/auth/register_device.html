@@ -6,9 +6,13 @@
     <div class="row">
         <div class="col-md-4">
             <p>
-            Scan the QR code with the Activeconnect mobile app to register your mobile device.
+                Scan the QR code with the Activeconnect mobile app to register your mobile device.
             </p>
-            <a href="{{reg_link}}"><div id="qrcode" ></div></a>
+            <a href="{{ reg_link }}">
+                <div id="qrcode"></div>
+            </a>
+            <br>
+            <a class="btn btn-default" href="{{ url_for("auth.login") }}">Next</a>
         </div>
     </div>
 {% endblock %}
