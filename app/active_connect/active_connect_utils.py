@@ -85,7 +85,7 @@ def decode_session_token(session_token):
         user_id = session_data["user_id"]
         return ac_session, user_id
 
-    except BadSignature:
+    except (BadSignature, KeyError):
         current_app.logger.debug("Failed to get session data.")
         return None, None
 
