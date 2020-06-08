@@ -14,6 +14,7 @@ import random
 import string
 from app import db, login
 from app.search import add_to_index, remove_from_index, query_index
+from app.active_connect.active_connect_utils import is_user_authenticated
 
 
 class SearchableMixin(object):
@@ -127,6 +128,10 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+    @property
+    def is_authenticated(self):
+        return is_user_authenticated(self.id)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

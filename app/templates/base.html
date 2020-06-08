@@ -79,6 +79,7 @@
 {% endblock %}
 
 {% block scripts %}
+
     {{ super() }}
     {{ moment.include_moment() }}
     {{ moment.lang(g.locale) }}
@@ -168,5 +169,44 @@
         });
         {% endif %}
     </script>
+        {% if not no_status_checks %}
+
+    <script>
+        var statusChecker = null;
+
+        $(document).ready(function(){
+            console.log( "ready!" );
+            statusChecker = setTimeout(callStatusAPI, 1000);
+        });
+
+
+          function callStatusAPI(){
+          let url = "{{ url_for("auth.session_status") }}";
+
+
+
+            // Call the status url
+            $.ajax({
+                type: "GET",
+                url: url,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(data){
+                    console.debug(data);
+
+                    if(data.status == 'active') {
+                        console.log("authenticated");
+                        statusChecker = setTimeout(callStatusAPI, 1000);
+                    }
+                    else {
+                        console.log("logged out " + data.message);
+                        window.location.href = '{{ url_for("auth.logout") }}';
+                    }
+                }
+            })
+
+      }
+    </script>
+    {% endif %}
    {% block page_scripts %}{% endblock %}
 {% endblock %}

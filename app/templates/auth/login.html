@@ -2,10 +2,24 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+     <div class="alert alert-info" id="error_msg" style="display: none"></div>
     <h1>{{ _('Sign In') }}</h1>
     <div class="row">
         <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+            <form method="post" novalidate >
+                    {{ form.hidden_tag() }}
+
+                <div id="signin">
+                    <div class="form-group  required"><label class="control-label" for="username">Username</label>
+                        <input class="form-control" id="username" name="username" required type="text" value="">
+                    </div>
+                    <button  type="button" class="btn btn-default" onclick="onLogin()">Sign In</button>
+                </div>
+                <div id="authenticating" style="display: none">
+                    <img class="p-3" src="{{url_for('static', filename='spinner.gif')}}"  alt="loading"/>
+                    Authenticating...
+                </div>
+            </form>
         </div>
     </div>
     <br>
@@ -14,4 +28,82 @@
         {{ _('Forgot Your Password?') }}
         <a href="{{ url_for('auth.reset_password_request') }}">{{ _('Click to Reset It') }}</a>
     </p>
+{% endblock %}
+
+{% block page_scripts %}
+     <script type="text/javascript" charset="utf-8">
+         function onLogin(){
+          {#console.log("OnLogin")#}
+          {#console.log("{{ login_url }}")#}
+          {#let flasher = $("#flasher");#}
+          {#flasher.html("");#}
+          {#flasher.hide();#}
+          {#showBusy(true);#}
+          hideError();
+          callAuthenticationAPI();
+      }
+
+      function showError(error_message){
+          let flasher = $("#error_msg");
+          flasher.html(error_message);
+          flasher.show();
+      }
+
+      function hideError(){
+          let flasher = $("#error_msg");
+          flasher.html("");
+          flasher.hide();
+      }
+
+      function showAuthenticating( busy ){
+
+          if(busy){
+              $("#authenticating").show();
+              $("#signin").hide();
+          }
+          else{
+              $("#authenticating").hide();
+              $("#signin").show();
+          }
+        }
+
+      function callAuthenticationAPI(){
+          let username= $("#username").val();
+          let url = "{{ url_for('auth.start_authentication',username=username) }}" + username;
+
+          showAuthenticating(true);
+
+
+            // Call the status url
+            $.ajax({
+                type: "POST",
+                url: url,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(data){
+                    console.debug(data);
+                    showAuthenticating(false);
+
+                    if(data.status == true) {
+
+                        console.log("authenticated");
+                        let token=data.token;
+                        $("#session_token").val(token);
+                        $( "form" ).submit();
+                    }
+                    else {
+                        console.log("failed " + data.message);
+                        showError(data.message);
+                        let flasher = $("#flasher");
+                    }
+                },
+                error: function(jqXHR, exception){
+                    showAuthenticating(false);
+                    showError("Login Failed");
+                }
+            })
+
+      }
+      </script>
+
 {% endblock %}
