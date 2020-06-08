@@ -24,12 +24,6 @@ class UserModelCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    def test_password_hashing(self):
-        u = User(username='susan')
-        u.set_password('cat')
-        self.assertFalse(u.check_password('dog'))
-        self.assertTrue(u.check_password('cat'))
-
     def test_avatar(self):
         u = User(username='john', email='john@example.com')
         self.assertEqual(u.avatar(128), ('https://www.gravatar.com/avatar/'
