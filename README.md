@@ -41,8 +41,13 @@ $ flask run
 
 ## User Registration
 Before a user can be authenticated using Activeconnect, they must be registered with the Activeconnect system.
+Activeconnect only requires a string token to identify a user of a client application.
+The value of this token is entirely up to the author of the client application.
+The recommended approach is to use a random token that is associated with the client application's user.
+Using this system means that Activeconnect stores no information that can be linked back to the user of the client application.
 This version of the Microblog application modifies the User model to include the field active_connect_id. 
 This field is initialized with a random string that is used to identify the user to Activeconnect.
+
 ```python
 # app/auth/routes.py
 @bp.route('/register', methods=['GET', 'POST'])
