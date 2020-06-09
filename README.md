@@ -18,6 +18,10 @@ class Config(object):
 ```
 
 ## Running the app
+* In a terminal window, change to the repo directory
+```
+$ cd CLONE_DIR
+```
 * Create a virtual environment
 ```
 $ python3 -m venv venv
