@@ -7,7 +7,7 @@ The application makes us of [Flask-Login](https://flask-login.readthedocs.io/en/
 The application uses the [Activeconnect python module](https://pypi.org/project/Activeconnect/) to communicate with the Activeconnect service.
 This application has been configured to use an example Activeconnect client application.
 In order to use it with your own Activeconnect client application you will need to:
-* Create an [Activeconnect account](https://activeconnect.activeapi.ninja)
+* Create an [Activeconnect account](https://activeconnect.activeapi.ninja/register)
 * Create an Activeconnect client application.
 * Modify config.py
 ```python
