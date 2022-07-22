@@ -14,7 +14,7 @@ import random
 import string
 from app import db, login
 from app.search import add_to_index, remove_from_index, query_index
-from app.active_connect.active_connect_utils import is_user_authenticated
+from app.iampass.iampass_utils import is_user_authenticated
 
 
 class SearchableMixin(object):
@@ -101,8 +101,8 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
 
-    # This is a random string used to identify this user to active_connect.
-    active_connect_id = db.Column(db.String(32), index=True, unique=True)
+    # This is a random string used to identify this user to iampass.
+    iampass_id = db.Column(db.String(32), index=True, unique=True)
 
     followed = db.relationship(
         'User', secondary=followers,
@@ -123,7 +123,7 @@ class User(UserMixin, PaginatedAPIMixin, db.Model):
     def __init__(self, username, email):
         self.username = username
         self.email = email
-        self.active_connect_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+        self.iampass_id = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
 
     def __repr__(self):
         return '<User {}>'.format(self.username)

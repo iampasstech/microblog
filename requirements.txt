@@ -1,4 +1,4 @@
-Activeconnect==0.0.8
+IAMPASS
 alembic==0.9.6
 Babel==2.5.1
 blinker==1.4
@@ -7,7 +7,7 @@ chardet==3.0.4
 click==6.7
 dominate==2.3.1
 elasticsearch==7.5.1
-Flask==1.0.2
+Flask==1.0.3
 Flask-Babel==0.11.2
 Flask-Bootstrap==3.3.7.1
 Flask-HTTPAuth==4.0.0
@@ -22,7 +22,6 @@ idna==2.6
 itsdangerous==0.24
 Jinja2==2.10
 Mako==1.0.7
-MarkupSafe==1.0
 marshmallow==3.6.1
 marshmallow-dataclass==7.6.0
 marshmallow-enum==1.5.1

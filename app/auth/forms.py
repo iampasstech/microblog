@@ -6,7 +6,7 @@ from app.models import User
 
 
 class LoginForm(FlaskForm):
-    # The login form only requires a user name and a hidden field to store the Activeconnect session token.
+    # The login form only requires a user name and a hidden field to store the IAMPASS session token.
     username = StringField(_l('Username'), validators=[DataRequired()])
     session_token = HiddenField("session_token")
 

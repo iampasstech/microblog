@@ -1,20 +1,20 @@
 # Welcome to Microblog!
 This is a fork of the Miguel Grinberg's [Flask Mega-Tutorial](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world).
-The application has been modified to use [Activeconnect](https://activeconnect.io) for user authentication.
+The application has been modified to use [IAMPASS](https://iampass.com) for user authentication.
 Full instructions for running the application can be found on [Flask Mega-Tutorial Page](https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world).
 
 The application makes us of [Flask-Login](https://flask-login.readthedocs.io/en/latest/) for user authentication.
-The application uses the [Activeconnect python module](https://pypi.org/project/Activeconnect/) to communicate with the Activeconnect service.
-This application has been configured to use an example Activeconnect client application.
-In order to use it with your own Activeconnect client application you will need to:
-* Create an [Activeconnect account](https://activeconnect.activeapi.ninja/register)
-* Create an Activeconnect client application.
+The application uses the [IAMPASS python module](https://pypi.org/project/IAMPASS/) to communicate with the IAMPASS service.
+This application has been configured to use an example IAMPASS client application.
+In order to use it with your own IAMPASS client application you will need to:
+* Create an [IAMPASS account](https://main.iam-api.com/register)
+* Create an IAMPASS client application.
 * Modify config.py
 ```python
 class Config(object):
 ...
-    ACTIVE_CONNECT_APPLICATION_ID = "MY APPLICATION ID"
-    ACTIVE_CONNECT_APPLICATION_SECRET = "MY APPLICATION SECRET"
+    IAMPASS_APPLICATION_ID = "MY APPLICATION ID"
+    IAMPASS_APPLICATION_SECRET = "MY APPLICATION SECRET"
 ```
 
 ## Running the app
@@ -44,13 +44,13 @@ $ flask run
 ```
 
 ## User Registration
-Before a user can be authenticated using Activeconnect, they must be registered with the Activeconnect system.
-Activeconnect only requires a string token to identify a user of a client application.
+Before a user can be authenticated using IAMPASS, they must be registered with the IAMPASS system.
+IAMPASS only requires a string token to identify a user of a client application.
 The value of this token is entirely up to the author of the client application.
 The recommended approach is to use a random token that is associated with the client application's user.
-Using this system means that Activeconnect stores no information that can be linked back to the user of the client application.
-This version of the Microblog application modifies the User model to include the field active_connect_id. 
-This field is initialized with a random string that is used to identify the user to Activeconnect.
+Using this system means that IAMPASS stores no information that can be linked back to the user of the client application.
+This version of the Microblog application modifies the User model to include the field iampass_id. 
+This field is initialized with a random string that is used to identify the user to IAMPASS.
 
 ```python
 # app/auth/routes.py
@@ -59,20 +59,20 @@ def register():
     # This is where we register users.
     # In the original version of the Microblog application, the user is just registered and the user
     # is redirected to the login page.
-    # Using Activeconnect requires that we register the user with Activeconnect, then render
-    # a page with information that allows them to register their mobile device with Activeconnect.
+    # Using IAMPASS requires that we register the user with IAMPASS, then render
+    # a page with information that allows them to register their mobile device with IAMPASS.
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
 
-        # Register the user with Activeconnect.
+        # Register the user with IAMPASS.
         manager = get_management_api()
-        add_user_result = manager.add_user(user.active_connect_id)
+        add_user_result = manager.add_user(user.iampass_id)
 
         if add_user_result == ManagementAPIResult.success:
-            # We don't add the user to our database until they have been registered with Activeconnect.
+            # We don't add the user to our database until they have been registered with IAMPASS.
             db.session.add(user)
             db.session.commit()
             flash(_('Congratulations, you are now a registered user!'))
@@ -92,26 +92,26 @@ def register():
                            form=form, no_status_checks=True)
 
 ```
-Once a user has been registerd with Activeconnect the User is saved to the database and the app redirects to the
+Once a user has been registerd with IAMPASS the User is saved to the database and the app redirects to the
 **/auth/register_device** route.
 ```python
 # app/auth/routes.py
 @bp.route('/register_device/<user_id>', methods=['GET'])
 def register_device(user_id):
     # This route displays a page with a QR code that the user can scan with their mobile device to register it
-    # with Activeconnect.
+    # with IAMPASS.
     user = User.query.filter(User.id == user_id).first_or_404()
 
-    # Create the activeconnect manager object.
+    # Create the IAMPASS manager object.
     manager = get_management_api()
 
     # Get a registration link for the user
-    registration_link = manager.get_registration_link(user_id = user.active_connect_id, display_name=user.username)
+    registration_link = manager.get_registration_link(user_id = user.iampass_id, display_name=user.username)
     return render_template('auth/register_device.html', reg_link = registration_link, no_status_checks=True)
 
 ```
-This route uses the Activeconnect management API to get a link that can be used by the user to register their mobile device.
-In this case the page renders the link as a QR code that can be scanned with the Activeconnect Mobile App.
+This route uses the IAMPASS management API to get a link that can be used by the user to register their mobile device.
+In this case the page renders the link as a QR code that can be scanned with the IAMPASS Mobile App.
 
 ## Authentication
 When the user clicks the 'Sign In' button on the login form, Javascript is used to call the **/start_authentication/username** route.
@@ -154,19 +154,23 @@ When the user clicks the 'Sign In' button on the login form, Javascript is used 
 
         }
 ```
-If authentication is successful **start_authentication** route returns Activeconnect session information.
+If authentication is successful **start_authentication** route returns IAMPASS session information.
 This data is stored in a hidden form field and the form is submitted (POST /login).
 
-Inside the **login** route Flask-Login is used to 'login' the user. In addition the Activeconnect session information is written to Flask's session instance.
+Inside the **login** route Flask-Login is used to 'login' the user. In addition the IAMPASS session information is written to Flask's session instance.
+
 ```python
 # app/auth/routes.py
-from app.active_connect.active_connect_utils import get_management_api, authenticate_user, \
+from app.iampass.iampass import get_management_api, authenticate_user,
     create_session_token, decode_session_token, end_session
+
 ...
+
+
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    # When the client posts to this route Activeconnect authentication has completed.
-    # Instead of checking a password we get the Activeconnect session information from a
+    # When the client posts to this route IAMPASS authentication has completed.
+    # Instead of checking a password we get the IAMPASS session information from a
     # hidden form element and check it.
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
@@ -177,14 +181,14 @@ def login():
             flash(_('Invalid username'))
             return redirect(url_for('auth.login'))
 
-        # The information for the Activeconnect session is stored in the hidden session_token field of the form.
+        # The information for the IAMPASS session is stored in the hidden session_token field of the form.
         # Get the session data and check that the user has been authenticated.
-        ac_session, user_id = decode_session_token(form.session_token.data)
+        ip_session, user_id = decode_session_token(form.session_token.data)
 
-        if ac_session is not None and ac_session.active and user_id == user.id:
+        if ip_session is not None and ip_session.active and user_id == user.id:
             # Store the session information. User.is_authenticated will use this when it is called by
             # flask-login during execution of the @login_required decorator.
-            session['ac_session']=form.session_token.data
+            session['ip_session'] = form.session_token.data
             login_user(user, remember=False)
             next_page = request.args.get('next')
             if not next_page or url_parse(next_page).netloc != '':
@@ -200,21 +204,21 @@ def login():
 Flask-Login used the ```@login_required``` decorator to protect resources. 
 The ```login_required``` decorator calls User.is_authenticated to determine if the user is authenticated.
 The standard implementation uses the ```UserMixin``` class to provide this property.
-In order to use Activeconnect the ```User``` model is changed to call Activeconnect to get the status of the session.
+In order to use IAMPASS the ```User``` model is changed to call IAMPASS to get the status of the session.
 ```python
 # app/models.py
 class User(UserMixin, PaginatedAPIMixin, db.Model):
-    # This is a random string used to identify this user to active_connect.
-    active_connect_id = db.Column(db.String(32), index=True, unique=True)
+    # This is a random string used to identify this user to iampass.
+    iampass_id = db.Column(db.String(32), index=True, unique=True)
 
     @property
     def is_authenticated(self):
-        # Call the is_user_authenticated helper (app/active_connect/active_connect_utils.py)
+        # Call the is_user_authenticated helper (app/iampass/iampass_utils.py)
         return is_user_authenticated(self.id)
 ```
 ## Session Monitoring
-An Activeconnect session can be closed by the user clicking the 'logout' button but can also be closed remotely:
-* The user (or an administrator) can end the session from the Activeconnect Mobile App.
+An IAMPASS session can be closed by the user clicking the 'logout' button but can also be closed remotely:
+* The user (or an administrator) can end the session from the IAMPASS Mobile App.
 * The session may be closed because the user is no longer present.
 Traditionally Flask-Login is used to check login status when a resource is requested.
 In order to respond to session status changes this application will periodically check the session status and if it is no longer active will:
