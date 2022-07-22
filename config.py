@@ -7,8 +7,9 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config(object):
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'sqlite:///' + os.path.join(basedir, 'app.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', '').replace(
+        'postgres://', 'postgresql://') or \
+        'sqlite:///' + os.path.join(basedir, 'app.db?check_same_thread=False')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
@@ -23,5 +24,6 @@ class Config(object):
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://'
     POSTS_PER_PAGE = 25
 
-    IAMPASS_APPLICATION_ID = "c9b5062204254e5bb972ae06e4bbb315"
-    IAMPASS_APPLICATION_SECRET = "SXB33FAUZUDCA6USWNZNES9YRUBKI6N1"
+    IAMPASS_APPLICATION_ID = "db4b088f2c9344b0846e2c5292a5bc27"
+    IAMPASS_APPLICATION_SECRET = "04U4X3IQ5790TL3DK257EPEFVQFW1NLZ"
+

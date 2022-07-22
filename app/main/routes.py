@@ -3,7 +3,7 @@ from flask import render_template, flash, redirect, url_for, request, g, \
     jsonify, current_app
 from flask_login import current_user, login_required
 from flask_babel import _, get_locale
-from guess_language import guess_language
+from langdetect import detect, LangDetectException
 from app import db
 from app.main.forms import EditProfileForm, EmptyForm, PostForm, SearchForm, \
     MessageForm
@@ -27,8 +27,9 @@ def before_request():
 def index():
     form = PostForm()
     if form.validate_on_submit():
-        language = guess_language(form.post.data)
-        if language == 'UNKNOWN' or len(language) > 5:
+        try:
+            language = detect(form.post.data)
+        except LangDetectException:
             language = ''
         post = Post(body=form.post.data, author=current_user,
                     language=language)
@@ -83,7 +84,8 @@ def user(username):
 @login_required
 def user_popup(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return render_template('user_popup.html', user=user)
+    form = EmptyForm()
+    return render_template('user_popup.html', user=user, form=form)
 
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])

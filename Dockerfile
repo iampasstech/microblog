@@ -1,13 +1,13 @@
-FROM python:3.6-alpine
+FROM python:slim
 
-RUN adduser -D microblog
+RUN useradd microblog
 
 WORKDIR /home/microblog
 
 COPY requirements.txt requirements.txt
 RUN python -m venv venv
 RUN venv/bin/pip install -r requirements.txt
-RUN venv/bin/pip install gunicorn pymysql
+RUN venv/bin/pip install gunicorn pymysql cryptography
 
 COPY app app
 COPY migrations migrations

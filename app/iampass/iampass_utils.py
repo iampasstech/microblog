@@ -8,7 +8,7 @@ from IAMPASS.session import Session, Status
 # This file contains utility functions for using the IAMPASS system.
 
 
-def get_iampsss_credentials():
+def get_iampass_credentials():
     # Get the application_id and application_secret for this application
     # For demo purposes they are stored in the application config but in a production
     # environment a more secure way of storing them is recommended (environment variable, key store system).

@@ -11,9 +11,19 @@
                 <p>{{ _('%(count)d followers', count=user.followers.count()) }}, {{ _('%(count)d following', count=user.followed.count()) }}</p>
                 {% if user != current_user %}
                     {% if not current_user.is_following(user) %}
-                    <a href="{{ url_for('main.follow', username=user.username) }}">{{ _('Follow') }}</a>
+                    <p>
+                        <form action="{{ url_for('main.follow', username=user.username) }}" method="post">
+                            {{ form.hidden_tag() }}
+                            {{ form.submit(value=_('Follow'), class_='btn btn-default btn-sm') }}
+                        </form>
+                    </p>
                     {% else %}
-                    <a href="{{ url_for('main.unfollow', username=user.username) }}">{{ _('Unfollow') }}</a>
+                    <p>
+                        <form action="{{ url_for('main.unfollow', username=user.username) }}" method="post">
+                            {{ form.hidden_tag() }}
+                            {{ form.submit(value=_('Unfollow'), class_='btn btn-default btm-sm') }}
+                        </form>
+                    </p>
                     {% endif %}
                 {% endif %}
             </small>
